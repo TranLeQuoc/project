@@ -13,6 +13,7 @@ class ReactSerializer(serializers.ModelSerializer):
 #         model = User
 #         fields = ['ID', 'first_name', 'last_name', 'email', 'phone_number', 'biography', 'avatar_url', 'page_count', 'font_size', 'font_style', 'hashed_password']
 
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -26,3 +27,16 @@ class UserSerializer(serializers.ModelSerializer):
         )
         user.save()
         return user
+    
+class ReaderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Reader
+        fields = ['email', 'password']
+        
+    def create(self, validated_data):
+        reader = Reader(
+            email=validated_data['email'],
+            password=validated_data['password']
+        )
+        reader.save()
+        return reader

@@ -12,7 +12,9 @@ class User(models.Model):
   password = models.CharField(max_length=200)
       
       
-      
+class Reader(models.Model):
+  email = models.CharField(max_length=30, unique=True)
+  password = models.CharField(max_length=200)
       
 # class User(models.Model):
 #     userID = models.CharField(max_length=50, unique=True, primary_key=True)

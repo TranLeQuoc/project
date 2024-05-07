@@ -2,6 +2,8 @@ from rest_framework.views import APIView
 from . models import *
 from rest_framework.response import Response
 from . serializer import *
+from rest_framework import status
+
 
 # Create your views here.
 
@@ -36,21 +38,27 @@ class UserView(APIView):
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data)
+        
+class ReaderView(APIView):
 
+    serializer_class = ReaderSerializer
 
+    def get(self, request):
+        output = [{"email": reader.email}
+                  for reader in Reader.objects.all()]
+        return Response(output)
 
-
-# class UserAPIView(APIView):
-#     permission_classes = (IsAuthenticated,)  # Require authentication for all endpoints
-
-#     def get(self, request):
-#         users = User.objects.all()
-#         serializer = UserSerializer(users, many=True)
-#         return Response(serializer.data)
-
-#     def post(self, request):
-#         serializer = UserSerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request):
+        # Get email and password from request data
+        email = request.data.get('email')
+        password = request.data.get('password')
+        
+        # Check if account exists
+        try:
+            reader = Reader.objects.get(email=email, password=password)
+        except Reader.DoesNotExist:
+            # If account does not exist, return error response
+            return Response({"error": "Account does not exist."}, status=status.HTTP_404_NOT_FOUND)
+        
+        # If account exists, return success response
+        return Response({"message": "Login successful.", "user's email": reader.email}, status=status.HTTP_200_OK)

@@ -18,9 +18,11 @@ from django.contrib import admin
 from django.urls import path
 from app.views import ReactView
 from app.views import UserView
+from app.views import ReaderView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('test/', ReactView.as_view(), name="anything"),
-     path('user/', UserView.as_view(), name="anything"),
+    path('user/login', UserView.as_view(), name="anything"),
+    path('reader/login', ReaderView.as_view(), name="anything"),
 ]
