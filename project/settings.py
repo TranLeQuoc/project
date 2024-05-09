@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import cloudinary
+import cloudinary.uploader
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -58,6 +60,12 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ],
 }
+
+cloudinary.config( 
+    cloud_name = "ddech7qeu", 
+    api_key = "699555985622217", 
+    api_secret = "AlHvZKwc2lH8EsslT4NwCILG0jQ"
+)
 
 CORS_ORIGIN_ALLOW_ALL = True
 

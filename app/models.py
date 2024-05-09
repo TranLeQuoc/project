@@ -15,7 +15,26 @@ class User(models.Model):
 class Reader(models.Model):
   email = models.CharField(max_length=30, unique=True)
   password = models.CharField(max_length=200)
-      
+
+class Book(models.Model):
+    title = models.CharField(max_length=100)
+    author = models.CharField(max_length=100)
+    genre = models.CharField(max_length=50)
+    rating = models.FloatField()
+    summary = models.TextField()
+    total_pages = models.PositiveIntegerField()
+    image_url = models.URLField()
+    book_url = models.URLField()
+    original_font_size = models.PositiveIntegerField()
+  
+  
+  
+  
+  
+  
+  
+  
+  
 # class User(models.Model):
 #     userID = models.CharField(max_length=50, unique=True, primary_key=True)
 #     first_name = models.CharField(max_length=50)

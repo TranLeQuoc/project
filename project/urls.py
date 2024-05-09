@@ -16,13 +16,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from app.views import ReactView
-from app.views import UserView
-from app.views import ReaderView
+from app.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('test/', ReactView.as_view(), name="anything"),
     path('user/login', UserView.as_view(), name="anything"),
-    path('reader/login', ReaderView.as_view(), name="anything"),
+    path('reader/login', ReaderLoginView.as_view(), name="anything"),
+    path('reader/register', ReaderRegisterView.as_view(), name="anything"),
+    path('book', BookView.as_view(), name="anything"),
+    path('book/content/<int:book_id>', BookContentView, name="anything"),
+    path('book/upload/<int:book_id>/<str:fileName>', BookUploading, name='book_upload'),
+    path('Path', getPathOS, name='getPathOS'),
 ]

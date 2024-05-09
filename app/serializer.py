@@ -40,3 +40,8 @@ class ReaderSerializer(serializers.ModelSerializer):
         )
         reader.save()
         return reader
+
+class BookSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Book
+        fields = ['title', 'author', 'genre', 'rating', 'summary', 'total_pages', 'image_url', 'book_url', 'original_font_size']
