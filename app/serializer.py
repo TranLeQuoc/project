@@ -55,3 +55,18 @@ class AddedBookSerializer(serializers.ModelSerializer):
     class Meta:
         model = AddedBook
         fields = ('id', 'shelf_id', 'user_id', 'book_id', 'added_date', 'current_page', 'last_update_date')
+        
+class AudioFolderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AudioFolder
+        fields = ['id', 'name', 'category', 'image_url', 'user_id']
+        
+class AudioFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AudioFile
+        fields = ['id', 'folder_id', 'user_id', 'name', 'file_url']
+
+class RatingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rating
+        fields = ['id', 'user_id', 'book_id', 'rating']

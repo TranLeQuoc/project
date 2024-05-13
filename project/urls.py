@@ -24,13 +24,25 @@ urlpatterns = [
     path('user/login', UserView.as_view(), name="anything"),
     path('reader/login', ReaderLoginView.as_view(), name="anything"),
     path('reader/register', ReaderRegisterView.as_view(), name="anything"),
+    
     path('book', BookView.as_view(), name="anything"),
     path('book/content/<int:book_id>', BookContentView.as_view(), name="anything"),
     path('book/upload/<int:book_id>/<str:fileName>', BookUploading, name='book_upload'),
+    
     path('shelf/', ShelfView.as_view(), name='shelf-list'),  # For creating a new shelf
     path('shelf/<int:user_id>/', ShelfView.as_view(), name='shelf-by-user'),  # For retrieving shelves by user ID
+   
     path('addedbook/', AddedBookView.as_view(), name='addedbook-list'),  # For creating a new added book
     path('addedbook/<int:user_id>/<int:shelf_id>/', AddedBookView.as_view(), name='shelf-by-user'),  # For retrieving shelves by user ID
     
-    # path('Path', getPathOS, name='getPathOS'),
+    path('audiofolders/', AudioFolderView.as_view(), name='audio_folder_list'),
+    path('audiofolders/<int:user_id>/', AudioFolderView.as_view(), name='user_audio_folder_list'),
+    
+    path('audiofiles/', AudioFileView.as_view(), name='audio_file_list'),
+    path('audiofiles/<int:user_id>/', AudioFileView.as_view(), name='user_audio_file_list'),
+    path('audiofiles/<int:user_id>/<int:folder_id>/', AudioFileView.as_view(), name='user_folder_audio_file_list'),
+    
+    path('ratings/', RatingView.as_view(), name='rating_list'),  # For creating or updating a rating
+    path('ratings/<int:user_id>/<int:book_id>/', RatingView.as_view(), name='user_book_rating'),  # For retrieving a rating
 ]
+    # path('Path', getPathOS, name='getPathOS'),

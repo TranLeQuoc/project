@@ -45,7 +45,27 @@ class AddedBook(models.Model):
         # Define the combination of shelf_id, user_id, and book_id as the primary key
         unique_together = ('shelf_id', 'user_id', 'book_id')
   
-  
+class AudioFolder(models.Model):
+    name = models.CharField(max_length=100)
+    category = models.CharField(max_length=100)
+    image_url = models.URLField()
+    user_id = models.IntegerField()
+    
+class AudioFile(models.Model):
+    folder_id = models.IntegerField()
+    user_id = models.IntegerField()
+    name = models.CharField(max_length=100)
+    file_url = models.URLField()
+
+class Rating(models.Model):
+    user_id = models.IntegerField()
+    book_id = models.IntegerField()
+    rating = models.IntegerField()
+    class Meta:
+        # Define the combination of shelf_id, user_id, and book_id as the primary key
+        unique_together = ('user_id', 'book_id')
+        
+        
 # class User(models.Model):
 #     userID = models.CharField(max_length=50, unique=True, primary_key=True)
 #     first_name = models.CharField(max_length=50)

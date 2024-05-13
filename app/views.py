@@ -10,7 +10,7 @@ from rest_framework import status
 import cloudinary
 from cloudinary.utils import cloudinary_url
 import urllib.request 
-
+from django.db.models import Avg
 # Create your views here.
 
 ####################################################    TEST    ######################################################################  
@@ -242,3 +242,136 @@ class AddedBookView(APIView):
             return Response(serialized_books, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'User ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        
+####################################################    AUDIO FOLDER    ######################################################################  
+
+class AudioFolderView(APIView):
+    serializer_class = AudioFolderSerializer
+
+    def post(self, request):
+        folder_id = request.data.get('id')  # Get the ID from the request data
+        if folder_id:
+            try:
+                # Check if the folder with the provided ID exists
+                folder = AudioFolder.objects.get(pk=folder_id)
+                # If the folder exists, update it with the request data
+                serializer = self.serializer_class(folder, data=request.data)
+            except AudioFolder.DoesNotExist:
+                # If the folder does not exist, create a new one
+                serializer = self.serializer_class(data=request.data)
+        else:
+            # If no ID is provided, create a new folder
+            serializer = self.serializer_class(data=request.data)
+
+        if serializer.is_valid():
+            # Save the folder to the database
+            serializer.save()
+            # Return the ID of the created or modified folder
+            return Response({'id': serializer.data['id']}, status=status.HTTP_201_CREATED)
+        else:
+            # If the data is not valid, return error response with validation errors
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, id = None):
+        try:
+            # Get the audio folder instance by ID
+            folder = AudioFolder.objects.get(pk=id)
+            folder.delete()
+            return Response({'message': 'Audio folder deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+        except AudioFolder.DoesNotExist:
+            return Response({'error': 'Audio folder not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    def get(self, request, user_id=None):
+        if user_id is not None:
+            # Retrieve all audio folders with the specified user_id
+            audio_folders = AudioFolder.objects.filter(user_id=user_id)
+        else:
+            # Retrieve all audio folders if user_id is None
+            audio_folders = AudioFolder.objects.all()
+        # Serialize the retrieved audio folders
+        serializer = self.serializer_class(audio_folders, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+####################################################    AUDIO FILE    ######################################################################  
+
+class AudioFileView(APIView):
+    serializer_class = AudioFileSerializer
+
+    def post(self, request):
+        audio_file_id = request.data.get('id')
+        user_id = request.data.get('user_id')
+        folder_id = request.data.get('folder_id')
+
+        if audio_file_id:
+            try:
+                # Check if the audio file exists
+                audio_file = AudioFile.objects.get(pk=id, user_id=user_id, folder_id=folder_id)
+                serializer = self.serializer_class(audio_file, data=request.data)
+            except AudioFile.DoesNotExist:
+                return Response({'error': 'Audio file not found'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            serializer = self.serializer_class(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, audio_file_id):
+        try:
+            audio_file = AudioFile.objects.get(pk=audio_file_id)
+            audio_file.delete()
+            return Response({'message': 'Audio file deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+        except AudioFile.DoesNotExist:
+            return Response({'error': 'Audio file not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    def get(self, request, user_id=None, folder_id=None):
+        if user_id is not None:
+            if folder_id is not None:
+                audio_files = AudioFile.objects.filter(user_id=user_id, folder_id=folder_id)
+            else:
+                audio_files = AudioFile.objects.filter(user_id=user_id)
+        else:
+            return Response({'error': 'User ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.serializer_class(audio_files, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class RatingView(APIView):
+    serializer_class = RatingSerializer
+
+    def post(self, request):
+        user_id = request.data.get('user_id')
+        book_id = request.data.get('book_id')
+        rating_value = request.data.get('rating')
+
+        try:
+            # Try to get the existing rating for the user and book
+            rating = Rating.objects.get(user_id=user_id, book_id=book_id)
+            rating.rating = rating_value  # Update the rating value
+            rating.save()
+        except Rating.DoesNotExist:
+            # If no rating exists, create a new one
+            rating = Rating.objects.create(user_id=user_id, book_id=book_id, rating=rating_value)
+
+        # Recalculate the average rating for the book
+        average_rating = Rating.objects.filter(book_id=book_id).aggregate(Avg('rating'))['rating__avg']
+        # Update the average rating in the corresponding Book instance
+        book = Book.objects.get(pk=book_id)
+        book.rating = average_rating
+        book.save()
+
+        return Response({'message': 'Rating updated successfully'}, status=status.HTTP_200_OK)
+
+    def get(self, request, user_id=None, book_id=None):
+        if user_id is None or book_id is None:
+            return Response({'error': 'User ID and Book ID are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Try to get the rating for the user and book
+            rating = Rating.objects.get(user_id=user_id, book_id=book_id)
+            serializer = self.serializer_class(rating)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Rating.DoesNotExist:
+            return Response({'error': 'Rating not found'}, status=status.HTTP_404_NOT_FOUND)
