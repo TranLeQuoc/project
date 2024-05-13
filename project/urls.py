@@ -25,7 +25,12 @@ urlpatterns = [
     path('reader/login', ReaderLoginView.as_view(), name="anything"),
     path('reader/register', ReaderRegisterView.as_view(), name="anything"),
     path('book', BookView.as_view(), name="anything"),
-    path('book/content/<int:book_id>', BookContentView, name="anything"),
+    path('book/content/<int:book_id>', BookContentView.as_view(), name="anything"),
     path('book/upload/<int:book_id>/<str:fileName>', BookUploading, name='book_upload'),
-    path('Path', getPathOS, name='getPathOS'),
+    path('shelf/', ShelfView.as_view(), name='shelf-list'),  # For creating a new shelf
+    path('shelf/<int:user_id>/', ShelfView.as_view(), name='shelf-by-user'),  # For retrieving shelves by user ID
+    path('addedbook/', AddedBookView.as_view(), name='addedbook-list'),  # For creating a new added book
+    path('addedbook/<int:user_id>/<int:shelf_id>/', AddedBookView.as_view(), name='shelf-by-user'),  # For retrieving shelves by user ID
+    
+    # path('Path', getPathOS, name='getPathOS'),
 ]

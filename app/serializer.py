@@ -45,3 +45,13 @@ class BookSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
         fields = ['title', 'author', 'genre', 'rating', 'summary', 'total_pages', 'image_url', 'book_url', 'original_font_size']
+        
+class ShelfSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Shelf
+        fields = ['name', 'user_id']
+
+class AddedBookSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AddedBook
+        fields = ('id', 'shelf_id', 'user_id', 'book_id', 'added_date', 'current_page', 'last_update_date')

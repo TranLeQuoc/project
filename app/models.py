@@ -28,11 +28,22 @@ class Book(models.Model):
     original_font_size = models.PositiveIntegerField()
   
   
+class Shelf(models.Model):
+    name = models.CharField(max_length=100)
+    user_id = models.IntegerField()
   
   
-  
-  
-  
+class AddedBook(models.Model):
+    shelf_id = models.IntegerField()
+    user_id = models.IntegerField()
+    book_id = models.IntegerField()
+    added_date = models.DateTimeField(auto_now_add=True)
+    current_page = models.IntegerField(default=0)
+    last_update_date = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        # Define the combination of shelf_id, user_id, and book_id as the primary key
+        unique_together = ('shelf_id', 'user_id', 'book_id')
   
   
 # class User(models.Model):

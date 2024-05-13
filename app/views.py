@@ -13,6 +13,7 @@ import urllib.request
 
 # Create your views here.
 
+####################################################    TEST    ######################################################################  
 
 class ReactView(APIView):
 
@@ -45,6 +46,7 @@ class UserView(APIView):
             serializer.save()
             return Response(serializer.data)
         
+####################################################    READER/USER    ######################################################################  
 
 class ReaderLoginView(APIView):
     serializer_class = ReaderSerializer
@@ -88,7 +90,7 @@ class ReaderRegisterView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         
-        
+####################################################    BOOK    ######################################################################  
         
 class BookView(APIView):
     serializer_class = BookSerializer
@@ -101,36 +103,43 @@ class BookView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
-        books = Book.objects.all()
+        books = Book.objects.all().order_by('rating')
         serializer = self.serializer_class(books, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        # Modify the serialized data to include the ID
+        serialized_data = serializer.data
+        for idx, book_data in enumerate(serialized_data):
+            book_data['id'] = books[idx].id  # Add 'id' key with the book ID
+            
+        return Response(serialized_data, status=status.HTTP_200_OK)
     
     
+class BookContentView(APIView):
+    def get_first_5000_words(self, book_url):
+        # Fetch the content of the book file from Cloudinary
+        file_url, _ = cloudinary_url(book_url)
+        with urllib.request.urlopen(file_url) as response:
+            book_content = response.read().decode('utf-8')
 
-def get_first_5000_words(book_url):
-    # Assuming your book file is a plain text file stored in Cloudinary
-    # Fetch the content of the book file from Cloudinary
-    file_url, _ = cloudinary_url(book_url)
-    with urllib.request.urlopen(file_url) as response:
-        book_content = response.read().decode('utf-8')
+        # Extract the first 5000 words
+        words = re.findall(r'\b\w+\b', book_content)
+        first_5000_words = ' '.join(words[:5000])
 
-    # Extract the first 5000 words
-    words = re.findall(r'\b\w+\b', book_content)
-    first_5000_words = ' '.join(words[:5000])
+        return first_5000_words
 
-    return first_5000_words
+    def get(self, request, book_id):
+        try:
+            # Retrieve the Book instance
+            book = Book.objects.get(pk=book_id)
+            book_url = book.book_url
 
+            # Get the first 5000 words of the book
+            first_5000_words = self.get_first_5000_words(book_url)
 
-def BookContentView(request, book_id):
-    try:
-        # Assuming your Book model has a field named 'book_url' containing the Cloudinary URL of the text file
-        book = Book.objects.get(pk=book_id)
-        book_url = book.book_url
-        first_5000_words = get_first_5000_words(book_url)
-        return JsonResponse({'first_5000_words': first_5000_words})
-    except Book.DoesNotExist:
-        return JsonResponse({'error': 'Book not found'}, status=404)
-    
+            return Response({'first_5000_words': first_5000_words}, status=status.HTTP_200_OK)
+        except Book.DoesNotExist:
+            return Response({'error': 'Book not found'}, status=status.HTTP_404_NOT_FOUND)
+        
 def getPathOS(request):
     
     return JsonResponse({'osLink': os.getcwd()})
@@ -158,3 +167,78 @@ def BookUploading(request, book_id, fileName):
         return JsonResponse({'uploaded_link': public_url})
     except Book.DoesNotExist:
         return JsonResponse({'error': 'Book not found'}, status=404)
+    
+    
+    
+####################################################    SHELF    ######################################################################  
+
+class ShelfView(APIView):
+    serializer_class = ShelfSerializer
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, user_id=None):  # Add user_id=None as a default parameter
+        if user_id is not None:
+            shelves = Shelf.objects.filter(user_id=user_id)
+        else:
+            shelves = Shelf.objects.all()
+            
+        serializer = self.serializer_class(shelves, many=True)
+        
+        # Modify the serialized data to include the ID
+        serialized_data = serializer.data
+        for idx, shelf_data in enumerate(serialized_data):
+            shelf_data['id'] = shelves[idx].id  # Add 'id' key with the shelf ID
+            
+        return Response(serialized_data)
+        
+
+####################################################    ADDEDBOOK    ######################################################################  
+
+class AddedBookView(APIView):
+    serializer_class = AddedBookSerializer
+    
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            # Check if the record already exists for the given shelf, user, and book
+            shelf_id = serializer.validated_data['shelf_id']
+            user_id = serializer.validated_data['user_id']
+            book_id = serializer.validated_data['book_id']
+            try:
+                added_book = AddedBook.objects.get(shelf_id=shelf_id, user_id=user_id, book_id=book_id)
+                serializer = self.serializer_class(added_book, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data, status=status.HTTP_200_OK)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except AddedBook.DoesNotExist:
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, shelf_id=None, user_id=None):
+        if user_id:
+            if shelf_id:
+                added_books = AddedBook.objects.filter(shelf_id=shelf_id, user_id=user_id)
+            else:
+                added_books = AddedBook.objects.filter(user_id=user_id)
+                
+            # Sort added books based on last_update_date in descending order
+            added_books = added_books.order_by('-last_update_date')
+            
+            serialized_books = []
+            for added_book in added_books:
+                book = Book.objects.get(pk=added_book.book_id)  # Fetch associated book
+                book_serializer = BookSerializer(book)  # Serialize associated book
+                added_book_data = AddedBookSerializer(added_book).data  # Serialize added book
+                added_book_data['book'] = book_serializer.data  # Add serialized book data to added book data
+                serialized_books.append(added_book_data)
+                
+            return Response(serialized_books, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'User ID is required'}, status=status.HTTP_400_BAD_REQUEST)
