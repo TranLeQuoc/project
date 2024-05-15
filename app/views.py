@@ -115,28 +115,30 @@ class BookView(APIView):
     
     
 class BookContentView(APIView):
-    def get_first_5000_words(self, book_url):
+    def get_content(self, book_url, beginIdx):
+        begin_index = beginIdx * 5000
         # Fetch the content of the book file from Cloudinary
         file_url, _ = cloudinary_url(book_url)
         with urllib.request.urlopen(file_url) as response:
             book_content = response.read().decode('utf-8')
 
-        # Extract the first 5000 words
-        words = re.findall(r'\b\w+\b', book_content)
-        first_5000_words = ' '.join(words[:5000])
+        # Extract the first 5000 characters
+        selected_characters = book_content[begin_index:begin_index + 5000]
 
-        return first_5000_words
+        return selected_characters
 
-    def get(self, request, book_id):
+    def get(self, request, book_id,page_number = 0):
         try:
             # Retrieve the Book instance
             book = Book.objects.get(pk=book_id)
             book_url = book.book_url
 
             # Get the first 5000 words of the book
-            first_5000_words = self.get_first_5000_words(book_url)
+            content_page = self.get_content(book_url,page_number)
 
-            return Response({'first_5000_words': first_5000_words}, status=status.HTTP_200_OK)
+            response_key = f'content_page_{page_number + 1}'
+
+            return Response({response_key: content_page}, status=status.HTTP_200_OK)
         except Book.DoesNotExist:
             return Response({'error': 'Book not found'}, status=status.HTTP_404_NOT_FOUND)
         
