@@ -205,22 +205,24 @@ class AddedBookView(APIView):
     serializer_class = AddedBookSerializer
     
     def post(self, request):
-        serializer = self.serializer_class(data=request.data)
+        data = request.data
+        shelf_id = data.get('shelf_id')
+        user_id = data.get('user_id')
+        book_id = data.get('book_id')
+        
+        try:
+            # Try to fetch the existing object
+            added_book = AddedBook.objects.get(shelf_id=shelf_id, user_id=user_id, book_id=book_id)
+            serializer = self.serializer_class(added_book, data=data, partial=True)
+        except AddedBook.DoesNotExist:
+            # If the object does not exist, create a new one
+            serializer = self.serializer_class(data=data)
+
         if serializer.is_valid():
-            # Check if the record already exists for the given shelf, user, and book
-            shelf_id = serializer.validated_data['shelf_id']
-            user_id = serializer.validated_data['user_id']
-            book_id = serializer.validated_data['book_id']
-            try:
-                added_book = AddedBook.objects.get(shelf_id=shelf_id, user_id=user_id, book_id=book_id)
-                serializer = self.serializer_class(added_book, data=request.data)
-                if serializer.is_valid():
-                    serializer.save()
-                    return Response(serializer.data, status=status.HTTP_200_OK)
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            except AddedBook.DoesNotExist:
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            serializer.save()
+            status_code = status.HTTP_200_OK if 'id' in serializer.data else status.HTTP_201_CREATED
+            return Response(serializer.data, status=status_code)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, shelf_id=None, user_id=None):
@@ -302,13 +304,11 @@ class AudioFileView(APIView):
 
     def post(self, request):
         audio_file_id = request.data.get('id')
-        user_id = request.data.get('user_id')
-        folder_id = request.data.get('folder_id')
 
         if audio_file_id:
             try:
                 # Check if the audio file exists
-                audio_file = AudioFile.objects.get(pk=id, user_id=user_id, folder_id=folder_id)
+                audio_file = AudioFile.objects.get(pk=audio_file_id)
                 serializer = self.serializer_class(audio_file, data=request.data)
             except AudioFile.DoesNotExist:
                 return Response({'error': 'Audio file not found'}, status=status.HTTP_404_NOT_FOUND)

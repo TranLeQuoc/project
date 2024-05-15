@@ -48,14 +48,14 @@ class AddedBook(models.Model):
 class AudioFolder(models.Model):
     name = models.CharField(max_length=100)
     category = models.CharField(max_length=100)
-    image_url = models.URLField()
+    image_url = models.URLField(default="https://encrypted-tbn3.gstatic.com/images?q=tbn%3AANd9GcS8OUabGQMxidI9ZxjReu3uqZN2Mos32YWdt_dBiixg7Z8H_LG1")
     user_id = models.IntegerField()
     
 class AudioFile(models.Model):
     folder_id = models.IntegerField()
     user_id = models.IntegerField()
     name = models.CharField(max_length=100)
-    file_url = models.URLField()
+    file_url = models.URLField(default="https://encrypted-tbn3.gstatic.com/images?q=tbn%3AANd9GcS8OUabGQMxidI9ZxjReu3uqZN2Mos32YWdt_dBiixg7Z8H_LG1")
 
 class Rating(models.Model):
     user_id = models.IntegerField()
