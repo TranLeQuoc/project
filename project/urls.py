@@ -26,6 +26,7 @@ urlpatterns = [
     path('reader/register', ReaderRegisterView.as_view(), name="anything"),
     
     path('books', BookView.as_view(), name="anything"),
+    path('books/<int:book_id>/', BookDetailView.as_view(), name='book_detail'),
     path('books/content/<int:book_id>/<int:page_number>', BookContentView.as_view(), name="anything"),
     path('books/upload/<int:book_id>/<str:fileName>', BookUploading, name='book_upload'),
     

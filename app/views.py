@@ -118,7 +118,17 @@ class BookView(APIView):
             
         return Response(serialized_data, status=status.HTTP_200_OK)
     
-    
+class BookDetailView(APIView):
+    serializer_class = BookSerializer
+
+    def get(self, request, book_id):
+        try:
+            book = Book.objects.get(pk=book_id)
+            serializer = self.serializer_class(book)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Book.DoesNotExist:
+            return Response({"error": "Book not found"}, status=status.HTTP_404_NOT_FOUND)
+        
 class BookContentView(APIView):
     def get_content(self, book_url, beginIdx):
         begin_index = beginIdx * 5000
