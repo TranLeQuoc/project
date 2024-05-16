@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from . models import *
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 
 
 class ReactSerializer(serializers.ModelSerializer):
@@ -7,13 +9,6 @@ class ReactSerializer(serializers.ModelSerializer):
         model = React
         fields = ['employee', 'department']
         
-
-# class UserSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = User
-#         fields = ['ID', 'first_name', 'last_name', 'email', 'phone_number', 'biography', 'avatar_url', 'page_count', 'font_size', 'font_style', 'hashed_password']
-
-
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -40,6 +35,13 @@ class ReaderSerializer(serializers.ModelSerializer):
         )
         reader.save()
         return reader
+    
+    def validate_email(self, value):
+        try:
+            validate_email(value)
+        except ValidationError:
+            raise serializers.ValidationError("Invalid email format")
+        return value
 
 class BookSerializer(serializers.ModelSerializer):
     class Meta:
@@ -70,3 +72,8 @@ class RatingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rating
         fields = ['id', 'user_id', 'book_id', 'rating']
+        
+class ReaderInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReaderInfo
+        fields = ['reader_id', 'email', 'first_name', 'last_name', 'phone_number', 'biography', 'avatar_url', 'page_count', 'font_size', 'font_style']

@@ -81,8 +81,13 @@ class ReaderRegisterView(APIView):
         # Check if the data is valid
         if serializer.is_valid():
             # Save the new user to the database
-            serializer.save()
+            reader = serializer.save()
             
+            reader_info = ReaderInfo(
+                reader_id=reader.id,
+                email=reader.email
+            )
+            reader_info.save()
             # Return success response
             return Response({"message": "User registered successfully."}, status=status.HTTP_201_CREATED)
         else:
@@ -376,4 +381,69 @@ class RatingView(APIView):
             serializer = self.serializer_class(rating)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Rating.DoesNotExist:
-            return Response({'error': 'Rating not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'rating': 0}, status=status.HTTP_200_OK)
+        
+####################################################    ReaderInfo    ######################################################################  
+
+
+class ReaderInfoCreateView(APIView):
+    serializer_class = ReaderInfoSerializer
+
+    def post(self, request):
+        # Deserialize the request data using the serializer
+        serializer = self.serializer_class(data=request.data)
+        
+        # Check if the data is valid
+        if serializer.is_valid():
+            # Save the new ReaderInfo to the database
+            serializer.save()
+            
+            # Return success response
+            return Response({"message": "ReaderInfo created successfully."}, status=status.HTTP_201_CREATED)
+        else:
+            # If the data is not valid, return error response with validation errors
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+class ReaderInfoByEmailView(APIView):
+    serializer_class = ReaderInfoSerializer
+
+    def get(self, request, email):
+        try:
+            reader_info = ReaderInfo.objects.get(email=email)
+            serializer = self.serializer_class(reader_info)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except ReaderInfo.DoesNotExist:
+            return Response({"error": "ReaderInfo not found."}, status=status.HTTP_404_NOT_FOUND)
+
+class ReaderInfoByIdView(APIView):
+    serializer_class = ReaderInfoSerializer
+
+    def get(self, request, reader_id):
+        try:
+            reader_info = ReaderInfo.objects.get(reader_id=reader_id)
+            serializer = self.serializer_class(reader_info)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except ReaderInfo.DoesNotExist:
+            return Response({"error": "ReaderInfo not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+class ReaderChangeInfo(APIView):
+    serializer_class = ReaderInfoSerializer
+
+    def post(self, request):
+        try:
+            reader_info = ReaderInfo.objects.get(reader_id=request.data.get('reader_id'))
+        except ReaderInfo.DoesNotExist:
+            return Response({"error": "ReaderInfo not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Deserialize the request data using the serializer, allowing partial updates
+        serializer = self.serializer_class(reader_info, data=request.data, partial=True)
+
+        # Check if the data is valid
+        if serializer.is_valid():
+            # Save the updated ReaderInfo to the database
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            # If the data is not valid, return error response with validation errors
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+

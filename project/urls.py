@@ -44,5 +44,10 @@ urlpatterns = [
     
     path('ratings/', RatingView.as_view(), name='rating_list'),  # For creating or updating a rating
     path('ratings/<int:user_id>/<int:book_id>/', RatingView.as_view(), name='user_book_rating'),  # For retrieving a rating
+    
+    #path('readerInfo/', ReaderInfoCreateView.as_view(), name='reader_info'),
+    path('readerinfo/email/<str:email>/', ReaderInfoByEmailView.as_view(), name='readerinfo_by_email'),
+    path('readerinfo/id/<int:reader_id>/', ReaderInfoByIdView.as_view(), name='readerinfo_by_id'),
+    path('readerinfo/', ReaderChangeInfo.as_view(), name='change_reader_info'),
 ]
     # path('Path', getPathOS, name='getPathOS'),
