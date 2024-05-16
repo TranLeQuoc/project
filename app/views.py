@@ -11,6 +11,8 @@ import cloudinary
 from cloudinary.utils import cloudinary_url
 import urllib.request 
 from django.db.models import Avg
+from django.db.models import Count
+
 # Create your views here.
 
 ####################################################    TEST    ######################################################################  
@@ -108,7 +110,7 @@ class BookView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
-        books = Book.objects.all().order_by('rating')
+        books = Book.objects.all().order_by('-rating')
         serializer = self.serializer_class(books, many=True)
         
         # Modify the serialized data to include the ID
@@ -117,6 +119,35 @@ class BookView(APIView):
             book_data['id'] = books[idx].id  # Add 'id' key with the book ID
             
         return Response(serialized_data, status=status.HTTP_200_OK)
+    
+class BookByPopularView(APIView):
+    serializer_class = BookSerializer
+
+    def get(self, request):
+        # Get all books
+        books = Book.objects.all()
+
+        # List to store tuples of book objects and their corresponding counts
+        books_with_counts = []
+
+        # Loop through each book
+        for book in books:
+            # Count the number of ratings for the current book
+            rating_count = Rating.objects.filter(book_id=book.id).count()
+            # Append tuple of book object and its rating count to the list
+            books_with_counts.append((book, rating_count))
+
+        # Sort the books based on the rating counts in descending order
+        sorted_books_with_counts = sorted(books_with_counts, key=lambda x: x[1], reverse=True)
+
+        # Extract sorted books from the sorted list
+        sorted_books = [book_count[0] for book_count in sorted_books_with_counts]
+
+        # Serialize the sorted books
+        serializer = self.serializer_class(sorted_books, many=True)
+
+        # Return the serialized data
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
 class BookDetailView(APIView):
     serializer_class = BookSerializer

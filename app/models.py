@@ -21,7 +21,7 @@ class Book(models.Model):
     title = models.CharField(max_length=100)
     author = models.CharField(max_length=100)
     genre = models.CharField(max_length=50)
-    rating = models.FloatField()
+    rating = models.FloatField(default=0.0)
     summary = models.TextField()
     total_pages = models.PositiveIntegerField()
     image_url = models.URLField()
