@@ -33,9 +33,11 @@ urlpatterns = [
     path('books/upload/<int:book_id>/<str:fileName>', BookUploading, name='book_upload'),
     path('books/search/', BookSearchView.as_view(), name='book-search'),
     
+    
     path('shelf/', ShelfView.as_view(), name='shelf-list'),  
     path('shelf/<int:user_id>/', ShelfView.as_view(), name='shelf-by-user'),  # For retrieving shelves by user ID
     path('shelf/delete/<int:shelf_id>/', ShelfView.as_view(), name='delete-shelf'),
+    path('shelves-containing-book/<int:user_id>/<int:book_id>/', ShelvesContainingBookView.as_view(), name='shelves-containing-book'),
    
     path('addedbooks/', AddedBookView.as_view(), name='addedbook-list'),  # For creating a new added book
     path('addedbooks/<int:user_id>/<int:shelf_id>/', AddedBookView.as_view(), name='shelf-by-user'),  # For retrieving shelves by user ID

@@ -214,7 +214,28 @@ class BookContentView(APIView):
             return Response({response_key: content_page}, status=status.HTTP_200_OK)
         except Book.DoesNotExist:
             return Response({'error': 'Book not found'}, status=status.HTTP_404_NOT_FOUND)
-        
+
+class ShelvesContainingBookView(APIView):
+
+    def get(self, request, user_id, book_id):
+        # Query AddedBook to find shelves containing the specified book for the given user
+        added_books = AddedBook.objects.filter(user_id=user_id, book_id=book_id)
+
+        # Get the shelf IDs from added_books
+        shelf_ids = added_books.values_list('shelf_id', flat=True)
+
+        # Query Shelf model to get all shelves containing the book
+        shelves = Shelf.objects.filter(id__in=shelf_ids)
+
+        # Serialize the shelves data
+        serializer = ShelfSerializer(shelves, many=True)
+
+        # Construct response data with both shelf IDs and names
+        response_data = [{'id': shelf.id, 'name': shelf.name} for shelf in shelves]
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
+
 def getPathOS(request):
     
     return JsonResponse({'osLink': os.getcwd()})
