@@ -48,7 +48,7 @@ class UserView(APIView):
             serializer.save()
             return Response(serializer.data)
         
-####################################################    READER/USER    ######################################################################  
+####################################################    READER AUTHENTICATION    ######################################################################  
 
 class ReaderLoginView(APIView):
     serializer_class = ReaderSerializer
@@ -95,8 +95,35 @@ class ReaderRegisterView(APIView):
         else:
             # If the data is not valid, return error response with validation errors
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+     
         
-        
+class ReaderChangePasswordView(APIView):
+
+    def post(self, request):
+        user_id = request.data.get('user_id')
+        old_password = request.data.get('old_password')
+        new_password = request.data.get('new_password')
+
+        # Validate the input
+        if not user_id or not old_password or not new_password:
+            return Response({'success': False, 'message': 'Missing required fields.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Get the reader by user_id
+            reader = Reader.objects.get(id=user_id)
+        except Reader.DoesNotExist:
+            return Response({'success': False, 'message': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Check if the old password is correct
+        if old_password != reader.password:
+            return Response({'success': False, 'message': 'Old password is incorrect.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Update the password
+        reader.password = new_password
+        reader.save()
+
+        return Response({'success': True, 'message': 'Password changed successfully.'}, status=status.HTTP_200_OK)
+    
 ####################################################    BOOK    ######################################################################  
         
 class BookView(APIView):
@@ -217,6 +244,20 @@ def BookUploading(request, book_id, fileName):
         return JsonResponse({'error': 'Book not found'}, status=404)
     
     
+class BookSearchView(APIView):
+    serializer_class = BookSerializer
+
+    def get(self, request):
+        query = request.query_params.get('q', None)
+        
+        if query is None:
+            return Response({'success': False, 'message': 'No search query provided.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Filter books by title containing the query string
+        books = Book.objects.filter(title__icontains=query)
+        serializer = self.serializer_class(books, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
 ####################################################    SHELF    ######################################################################  
 

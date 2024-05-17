@@ -24,12 +24,14 @@ urlpatterns = [
     path('user/login', UserView.as_view(), name="anything"),
     path('reader/login', ReaderLoginView.as_view(), name="anything"),
     path('reader/register', ReaderRegisterView.as_view(), name="anything"),
+    path('reader/change-password/', ReaderChangePasswordView.as_view(), name='change-password'),
     
     path('books', BookView.as_view(), name="anything"),
     path('books/popular/', BookByPopularView.as_view(), name='book-popular-list'),
     path('books/<int:book_id>/', BookDetailView.as_view(), name='book_detail'),
     path('books/content/<int:book_id>/<int:page_number>', BookContentView.as_view(), name="anything"),
     path('books/upload/<int:book_id>/<str:fileName>', BookUploading, name='book_upload'),
+    path('books/search/', BookSearchView.as_view(), name='book-search'),
     
     path('shelf/', ShelfView.as_view(), name='shelf-list'),  
     path('shelf/<int:user_id>/', ShelfView.as_view(), name='shelf-by-user'),  # For retrieving shelves by user ID
