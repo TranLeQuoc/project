@@ -81,4 +81,4 @@ class ReaderInfoSerializer(serializers.ModelSerializer):
 class ReadingProcessSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReadingProcess
-        fields = ['id', 'user_id', 'book_id', 'current_page']
+        fields = ['id', 'user_id', 'book_id', 'current_page','last_update_date']

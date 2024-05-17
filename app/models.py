@@ -82,6 +82,7 @@ class ReadingProcess(models.Model):
   user_id = models.IntegerField()
   book_id = models.IntegerField()
   current_page = models.PositiveIntegerField()
+  last_update_date = models.DateTimeField(auto_now=True)
   class Meta:
         # Define the combination of shelf_id, user_id, and book_id as the primary key
       unique_together = ('user_id', 'book_id')

@@ -619,23 +619,24 @@ class ReadingProcessView(APIView):
         user_id = request.data.get('user_id')
         book_id = request.data.get('book_id')
         current_page = request.data.get('current_page')
-
+        current_time = timezone.now()
         # Check for required fields
-        if not all([user_id, book_id, current_page]):
+        if None in [user_id, book_id, current_page]:
             return Response({'error': 'User ID, Book ID, and Current Page are required'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             # Try to get the existing reading process for the user and book
             reading_process = ReadingProcess.objects.get(user_id=user_id, book_id=book_id)
             reading_process.current_page = current_page  # Update the current page
+            reading_process.last_update_date = current_time  # Update the last update date
             reading_process.save()
         except ReadingProcess.DoesNotExist:
             # If no reading process exists, create a new one
-            reading_process = ReadingProcess.objects.create(user_id=user_id, book_id=book_id, current_page=current_page)
+            reading_process = ReadingProcess.objects.create(user_id=user_id, book_id=book_id, current_page=current_page, last_update_date=current_time)
             # Update current_page for all AddedBook instances with the same user_id and book_id
             
         # Update current_page for all AddedBook instances with the same user_id and book_id
-        current_time = timezone.now()
+        
         AddedBook.objects.filter(user_id=user_id, book_id=book_id).update(current_page=current_page, last_update_date=current_time)
 
         serializer = self.serializer_class(reading_process)
@@ -664,4 +665,28 @@ class ReadingProcessView(APIView):
         except ReadingProcess.DoesNotExist:
             return Response({'current_page': 0, 'percentage': 0}, status=status.HTTP_404_NOT_FOUND)
 
-        
+class RecentBookAPI(APIView):
+    serializer_class = BookSerializer
+
+    def get(self, request, user_id):
+        # Check if the user has any reading processes
+        reading_processes = ReadingProcess.objects.filter(user_id=user_id).order_by('-last_update_date')
+
+        if reading_processes.exists():
+            # Get the most recent reading process
+            most_recent_reading = reading_processes.first()
+
+            # Retrieve the book associated with the most recent reading process
+            book = Book.objects.get(id=most_recent_reading.book_id)
+
+            # Serialize the book data
+            serializer = self.serializer_class(book)
+            # Include the book ID in the response
+            data = {
+                'book_id': book.id,
+                **serializer.data
+            }
+            return Response(data, status=status.HTTP_200_OK)
+        else:
+            # If the user hasn't read any books yet, return an empty response
+            return Response({"message": "no recent book"}, status=status.HTTP_404_NOT_FOUND)

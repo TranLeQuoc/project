@@ -62,6 +62,7 @@ urlpatterns = [
     
     path('readingprocess/', ReadingProcessView.as_view(), name='reading-process'),
     path('readingprocess/<int:user_id>/<int:book_id>/', ReadingProcessView.as_view(), name='reading-process-detail'),
+    path('readingprocess/recentbook/<int:user_id>/', RecentBookAPI.as_view(), name='reading-process-detail'),
     
 ]
     # path('Path', getPathOS, name='getPathOS'),
