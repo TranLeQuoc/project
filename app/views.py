@@ -408,6 +408,23 @@ class AudioFolderView(APIView):
         # Serialize the retrieved audio folders
         serializer = self.serializer_class(audio_folders, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class DeleteAudioFolderView(APIView):
+
+    def delete(self, request, audio_folder_id):
+        try:
+            # Get the AudioFolder object by ID
+            audio_folder = AudioFolder.objects.get(id=audio_folder_id)
+        except AudioFolder.DoesNotExist:
+            return Response({'success': False, 'message': 'AudioFolder not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Delete all AudioFile objects associated with this AudioFolder
+        AudioFile.objects.filter(folder_id=audio_folder_id).delete()
+
+        # Delete the AudioFolder object
+        audio_folder.delete()
+
+        return Response({'success': True, 'message': 'AudioFolder and associated audio files deleted successfully.'}, status=status.HTTP_200_OK)
     
 ####################################################    AUDIO FILE    ######################################################################  
 
@@ -451,6 +468,24 @@ class AudioFileView(APIView):
 
         serializer = self.serializer_class(audio_files, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class DeleteAudioFileView(APIView):
+
+    def delete(self, request, audio_file_id):
+        try:
+            # Get the AudioFile object by ID
+            audio_file = AudioFile.objects.get(id=audio_file_id)
+        except AudioFile.DoesNotExist:
+            return Response({'success': False, 'message': 'AudioFile not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Delete the AudioFile object
+        audio_file.delete()
+
+        return Response({'success': True, 'message': 'AudioFile deleted successfully.'}, status=status.HTTP_200_OK)
+
+
+####################################################   RATING   ######################################################################  
 
 class RatingView(APIView):
     serializer_class = RatingSerializer

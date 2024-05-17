@@ -43,10 +43,12 @@ urlpatterns = [
     
     path('audiofolders/', AudioFolderView.as_view(), name='audio_folder_list'),
     path('audiofolders/<int:user_id>/', AudioFolderView.as_view(), name='user_audio_folder_list'),
+    path('audiofolder/delete/<int:audio_folder_id>/', DeleteAudioFolderView.as_view(), name='delete-audiofolder'),
     
     path('audiofiles/', AudioFileView.as_view(), name='audio_file_list'),
     path('audiofiles/<int:user_id>/', AudioFileView.as_view(), name='user_audio_file_list'),
     path('audiofiles/<int:user_id>/<int:folder_id>/', AudioFileView.as_view(), name='user_folder_audio_file_list'),
+    path('audiofile/delete/<int:audio_file_id>/', DeleteAudioFileView.as_view(), name='delete-audiofile'),
     
     path('ratings/', RatingView.as_view(), name='rating_list'),  # For creating or updating a rating
     path('ratings/<int:user_id>/<int:book_id>/', RatingView.as_view(), name='user_book_rating'),  # For retrieving a rating
