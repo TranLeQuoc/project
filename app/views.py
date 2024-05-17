@@ -208,7 +208,7 @@ class BookContentView(APIView):
             # Get the first 5000 words of the book
             content_page = self.get_content(book_url,page_number)
 
-            response_key = f'content_page_{page_number + 1}'
+            response_key = f'content_page_{page_number}'
 
             return Response({response_key: content_page}, status=status.HTTP_200_OK)
         except Book.DoesNotExist:
