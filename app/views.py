@@ -284,6 +284,21 @@ class ShelfView(APIView):
             shelf_data['id'] = shelves[idx].id  # Add 'id' key with the shelf ID
             
         return Response(serialized_data)
+    
+    def delete(self, request, shelf_id):
+        try:
+            # Get the Shelf object by ID
+            shelf = Shelf.objects.get(id=shelf_id)
+        except Shelf.DoesNotExist:
+            return Response({'success': False, 'message': 'Shelf not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Delete all AddedBook objects associated with this Shelf
+        AddedBook.objects.filter(shelf_id=shelf_id).delete()
+
+        # Delete the Shelf object
+        shelf.delete()
+
+        return Response({'success': True, 'message': 'Shelf and associated books deleted successfully.'}, status=status.HTTP_200_OK)
         
 
 ####################################################    ADDEDBOOK    ######################################################################  
@@ -334,6 +349,16 @@ class AddedBookView(APIView):
         else:
             return Response({'error': 'User ID is required'}, status=status.HTTP_400_BAD_REQUEST)
         
+    def delete(self, request, shelf_id, user_id, book_id):
+        try:
+            # Get the AddedBook object by composite key
+            added_book = AddedBook.objects.get(shelf_id=shelf_id, user_id=user_id, book_id=book_id)
+        except AddedBook.DoesNotExist:
+            return Response({'success': False, 'message': 'book not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Delete the AddedBook object
+        added_book.delete()
+        return Response({'success': True, 'message': 'AddedBook deleted successfully.'}, status=status.HTTP_200_OK)
         
 ####################################################    AUDIO FOLDER    ######################################################################  
 

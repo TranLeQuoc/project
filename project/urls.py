@@ -35,9 +35,11 @@ urlpatterns = [
     
     path('shelf/', ShelfView.as_view(), name='shelf-list'),  
     path('shelf/<int:user_id>/', ShelfView.as_view(), name='shelf-by-user'),  # For retrieving shelves by user ID
+    path('shelf/delete/<int:shelf_id>/', ShelfView.as_view(), name='delete-shelf'),
    
     path('addedbooks/', AddedBookView.as_view(), name='addedbook-list'),  # For creating a new added book
     path('addedbooks/<int:user_id>/<int:shelf_id>/', AddedBookView.as_view(), name='shelf-by-user'),  # For retrieving shelves by user ID
+    path('addedbook/delete/<int:shelf_id>/<int:user_id>/<int:book_id>/', AddedBookView.as_view(), name='delete-addedbook'),
     
     path('audiofolders/', AudioFolderView.as_view(), name='audio_folder_list'),
     path('audiofolders/<int:user_id>/', AudioFolderView.as_view(), name='user_audio_folder_list'),
