@@ -1,8 +1,8 @@
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
 import os
-import re
 from django.http import JsonResponse
 from rest_framework.views import APIView
-import urllib3
 from . models import *
 from rest_framework.response import Response
 from . serializer import *
@@ -11,7 +11,6 @@ import cloudinary
 from cloudinary.utils import cloudinary_url
 import urllib.request 
 from django.db.models import Avg
-from django.db.models import Count
 
 # Create your views here.
 
@@ -610,3 +609,59 @@ class ReaderChangeInfo(APIView):
             # If the data is not valid, return error response with validation errors
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+####################################################    Reading process    ######################################################################  
+
+
+class ReadingProcessView(APIView):
+    serializer_class = ReadingProcessSerializer
+
+    def post(self, request):
+        user_id = request.data.get('user_id')
+        book_id = request.data.get('book_id')
+        current_page = request.data.get('current_page')
+
+        # Check for required fields
+        if not all([user_id, book_id, current_page]):
+            return Response({'error': 'User ID, Book ID, and Current Page are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Try to get the existing reading process for the user and book
+            reading_process = ReadingProcess.objects.get(user_id=user_id, book_id=book_id)
+            reading_process.current_page = current_page  # Update the current page
+            reading_process.save()
+        except ReadingProcess.DoesNotExist:
+            # If no reading process exists, create a new one
+            reading_process = ReadingProcess.objects.create(user_id=user_id, book_id=book_id, current_page=current_page)
+            # Update current_page for all AddedBook instances with the same user_id and book_id
+            
+        # Update current_page for all AddedBook instances with the same user_id and book_id
+        current_time = timezone.now()
+        AddedBook.objects.filter(user_id=user_id, book_id=book_id).update(current_page=current_page, last_update_date=current_time)
+
+        serializer = self.serializer_class(reading_process)
+        return Response({'message' : 'reading process updated successfully'}, status=status.HTTP_200_OK)
+
+    def get(self, request, user_id=None, book_id=None):
+        if user_id is None or book_id is None:
+            return Response({'error': 'User ID and Book ID are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Try to get the reading process for the user and book
+            reading_process = ReadingProcess.objects.get(user_id=user_id, book_id=book_id)
+            book = get_object_or_404(Book, id=book_id)
+            
+            # Calculate percentage and round to 2 decimal places
+            total_pages = book.total_pages
+            current_page = reading_process.current_page
+            percentage = round((current_page / total_pages) * 100, 2)
+
+            serializer = self.serializer_class(reading_process)
+            data = {
+                'current_page': reading_process.current_page,
+                'percentage': percentage
+            }
+            return Response(data, status=status.HTTP_200_OK)
+        except ReadingProcess.DoesNotExist:
+            return Response({'current_page': 0, 'percentage': 0}, status=status.HTTP_404_NOT_FOUND)
+
+        

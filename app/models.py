@@ -77,3 +77,11 @@ class ReaderInfo(models.Model):
   page_count = models.IntegerField(default=0)
   font_size = models.IntegerField(default=12)
   font_style = models.CharField(max_length=50, default="Arial")
+
+class ReadingProcess(models.Model):
+  user_id = models.IntegerField()
+  book_id = models.IntegerField()
+  current_page = models.PositiveIntegerField()
+  class Meta:
+        # Define the combination of shelf_id, user_id, and book_id as the primary key
+      unique_together = ('user_id', 'book_id')

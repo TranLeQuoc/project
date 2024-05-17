@@ -9,5 +9,6 @@ admin.site.register(AudioFolder)
 admin.site.register(AudioFile)
 admin.site.register(ReaderInfo)
 admin.site.register(Rating)
+admin.site.register(ReadingProcess)
 
 # Register your models here.

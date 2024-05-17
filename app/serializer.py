@@ -77,3 +77,8 @@ class ReaderInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReaderInfo
         fields = ['reader_id', 'email', 'first_name', 'last_name', 'phone_number', 'biography', 'avatar_url', 'page_count', 'font_size', 'font_style']
+
+class ReadingProcessSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReadingProcess
+        fields = ['id', 'user_id', 'book_id', 'current_page']

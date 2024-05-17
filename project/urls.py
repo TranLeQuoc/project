@@ -59,5 +59,9 @@ urlpatterns = [
     path('readerinfo/email/<str:email>/', ReaderInfoByEmailView.as_view(), name='readerinfo_by_email'),
     path('readerinfo/id/<int:reader_id>/', ReaderInfoByIdView.as_view(), name='readerinfo_by_id'),
     path('readerinfo/', ReaderChangeInfo.as_view(), name='change_reader_info'),
+    
+    path('readingprocess/', ReadingProcessView.as_view(), name='reading-process'),
+    path('readingprocess/<int:user_id>/<int:book_id>/', ReadingProcessView.as_view(), name='reading-process-detail'),
+    
 ]
     # path('Path', getPathOS, name='getPathOS'),
