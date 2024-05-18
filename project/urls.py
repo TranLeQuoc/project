@@ -20,7 +20,7 @@ from app.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('test/', ReactView.as_view(), name="anything"),
+    path('', ReactView.as_view(), name="anything"),
     path('user/login', UserView.as_view(), name="anything"),
     path('reader/login', ReaderLoginView.as_view(), name="anything"),
     path('reader/register', ReaderRegisterView.as_view(), name="anything"),
