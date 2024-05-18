@@ -77,7 +77,8 @@ class ReaderInfo(models.Model):
   page_count = models.IntegerField(default=0)
   font_size = models.IntegerField(default=12)
   font_style = models.CharField(max_length=50, default="Arial")
-
+  default_narrator = models.IntegerField(default=0)
+    
 class ReadingProcess(models.Model):
   user_id = models.IntegerField()
   book_id = models.IntegerField()

@@ -690,3 +690,93 @@ class RecentBookAPI(APIView):
         else:
             # If the user hasn't read any books yet, return an empty response
             return Response({"message": "no recent book"}, status=status.HTTP_404_NOT_FOUND)
+
+
+####################################################    Default Narrator    ######################################################################  
+
+
+class DefaultNarratorDetail(APIView):
+    def get(self, request, user_id):
+        try:
+            reader_info = ReaderInfo.objects.get(reader_id=user_id)
+        except ReaderInfo.DoesNotExist:
+            return Response({'message' : 'default narrator does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = DefaultNarratorSerializer(reader_info)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+
+class DefaultNarratorUpdate(APIView):
+    serializer_class = DefaultNarratorSerializer
+    
+    def post(self, request):
+        user_id = request.data.get('reader_id')
+        try:
+            reader_info = ReaderInfo.objects.get(reader_id=user_id)
+        except ReaderInfo.DoesNotExist:
+            return Response({'message' : 'default narrator does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = self.serializer_class(reader_info, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    ####################################################    Upload Folder Image    ######################################################################  
+
+    
+class AudioFolderUploadImage(APIView):
+    def post(self, request, format=None):
+        folder_id = request.data.get('folder_id')
+        user_id = request.data.get('user_id')
+        image = request.FILES.get('image')
+        
+        if not folder_id or not user_id or not image:
+            return Response({"error": "folder_id, user_id, and image are required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Get the folder instance
+        folder = get_object_or_404(AudioFolder, id=folder_id)
+        
+        # Check if the user_id matches
+        if folder.user_id != int(user_id):
+            return Response({"error": "Unauthorized user."}, status=status.HTTP_403_FORBIDDEN)
+        
+        # Upload the image to Cloudinary
+        try:
+            upload_result = cloudinary.uploader.upload(image)
+            image_url = upload_result.get('secure_url')
+            
+            # Update the folder instance with the new image URL
+            folder.image_url = image_url
+            folder.save()
+            
+            # Serialize and return the updated folder
+            serializer = AudioFolderSerializer(folder)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class ReaderInfoUploadAvatar(APIView):
+    def post(self, request, format=None):
+        reader_id = request.data.get('reader_id')
+        image = request.FILES.get('image')
+        
+        if not reader_id or not image:
+            return Response({"error": "reader_id and image are required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Get the reader instance
+        reader = get_object_or_404(ReaderInfo, id=reader_id)
+        
+        # Upload the image to Cloudinary
+        try:
+            upload_result = cloudinary.uploader.upload(image)
+            avatar_url = upload_result.get('secure_url')
+            
+            # Update the reader instance with the new avatar URL
+            reader.avatar_url = avatar_url
+            reader.save()
+            
+            # Serialize and return the updated reader
+            serializer = ReaderInfoSerializer(reader)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

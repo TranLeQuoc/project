@@ -46,6 +46,7 @@ urlpatterns = [
     path('audiofolders/', AudioFolderView.as_view(), name='audio_folder_list'),
     path('audiofolders/<int:user_id>/', AudioFolderView.as_view(), name='user_audio_folder_list'),
     path('audiofolder/delete/<int:audio_folder_id>/', DeleteAudioFolderView.as_view(), name='delete-audiofolder'),
+    path('audiofolder/uploadimage/', AudioFolderUploadImage.as_view(), name='audiofolder-upload-image'),
     
     path('audiofiles/', AudioFileView.as_view(), name='audio_file_list'),
     path('audiofiles/<int:user_id>/', AudioFileView.as_view(), name='user_audio_file_list'),
@@ -59,10 +60,17 @@ urlpatterns = [
     path('readerinfo/email/<str:email>/', ReaderInfoByEmailView.as_view(), name='readerinfo_by_email'),
     path('readerinfo/id/<int:reader_id>/', ReaderInfoByIdView.as_view(), name='readerinfo_by_id'),
     path('readerinfo/', ReaderChangeInfo.as_view(), name='change_reader_info'),
+    path('readerinfo/uploadavatar/', ReaderInfoUploadAvatar.as_view(), name='upload-avatar'),
+    
+    path('readerinfo/default_narrator/<int:user_id>/', DefaultNarratorDetail.as_view()),
+    path('readerinfo/default_narrator/', DefaultNarratorUpdate.as_view()),
+    
     
     path('readingprocess/', ReadingProcessView.as_view(), name='reading-process'),
     path('readingprocess/<int:user_id>/<int:book_id>/', ReadingProcessView.as_view(), name='reading-process-detail'),
     path('readingprocess/recentbook/<int:user_id>/', RecentBookAPI.as_view(), name='reading-process-detail'),
+    
+    
     
 ]
     # path('Path', getPathOS, name='getPathOS'),

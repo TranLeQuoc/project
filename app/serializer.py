@@ -76,9 +76,14 @@ class RatingSerializer(serializers.ModelSerializer):
 class ReaderInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReaderInfo
-        fields = ['reader_id', 'email', 'first_name', 'last_name', 'phone_number', 'biography', 'avatar_url', 'page_count', 'font_size', 'font_style']
+        fields = ['reader_id', 'email', 'first_name', 'last_name', 'phone_number', 'biography', 'avatar_url', 'page_count', 'font_size', 'font_style', 'default_narrator']
 
 class ReadingProcessSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReadingProcess
         fields = ['id', 'user_id', 'book_id', 'current_page','last_update_date']
+
+class DefaultNarratorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReaderInfo
+        fields = ['reader_id', 'default_narrator']
