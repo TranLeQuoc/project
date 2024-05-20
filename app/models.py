@@ -56,7 +56,7 @@ class AudioFile(models.Model):
     folder_id = models.IntegerField()
     user_id = models.IntegerField()
     name = models.CharField(max_length=100)
-    file_url = models.URLField(default="https://encrypted-tbn3.gstatic.com/images?q=tbn%3AANd9GcS8OUabGQMxidI9ZxjReu3uqZN2Mos32YWdt_dBiixg7Z8H_LG1")
+    file_url = models.IntegerField(default="https://encrypted-tbn3.gstatic.com/images?q=tbn%3AANd9GcS8OUabGQMxidI9ZxjReu3uqZN2Mos32YWdt_dBiixg7Z8H_LG1")
 
 class Rating(models.Model):
     user_id = models.IntegerField()
